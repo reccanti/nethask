@@ -5,16 +5,28 @@
 -- [X] Create and render a map
 -- [] Render the user at the starting location
 -- [] Update the user's location when the input changes
-
 data GameState = GameState {
     userLocation :: (Int, Int),
     roomDimensions :: (Int, Int)
 } deriving (Show)
 
 -- Display a grid with the given dimensions
-renderGrid :: Int -> Int -> String
-renderGrid width height = 
-    unlines $ replicate height $ replicate width '.'
+renderGrid :: GameState -> String
+renderGrid gs =
+    let (width, height) = roomDimensions gs
+    in unlines $ replicate height $ replicate width '.'
+
+-- Display a player on the screen
+renderPlayerOnGrid :: GameState -> String -> String
+renderPlayerOnGrid gs grid =
+    let (width, height) = roomDimensions gs
+        (x, y) = userLocation gs
+        index = (width + 1) * y + x
+    in replace grid '*' index
+    where
+        replace grid char index = 
+            let (x,_:xs) = splitAt index grid
+            in x ++ [char] ++ xs
 
 main = do
     state <- initialize
@@ -23,11 +35,11 @@ main = do
         initialize :: IO GameState
         initialize = do
             return GameState {
-                userLocation=(0,0),
+                userLocation=(5,5),
                 roomDimensions=(10,10)
             }
         render :: GameState -> IO ()
         render gs = do
-            let (width, height) = roomDimensions gs
-            putStr $ renderGrid width height
+            let grid = renderPlayerOnGrid gs (renderGrid gs)
+            putStr grid
     
